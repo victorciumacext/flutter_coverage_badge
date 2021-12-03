@@ -11,15 +11,21 @@ Future main(List<String> args) async {
   parser.addFlag('badge',
       help: 'Generate coverage badge SVG image in your package root',
       defaultsTo: true);
+  parser.addFlag('test', abbr:  't', help: 'runs flutter test before generating badge ');
 
   final options = parser.parse(args);
+
+  if (options.wasParsed('test')) {
+    await runTestsWithCoverage(Directory.current.path).then((_) {
+     print('Coverage report saved to "coverage/lcov.info".');
+    });
+  }
+
   if (options.wasParsed('help')) {
     print(parser.usage);
     return;
   }
-  //await runTestsWithCoverage(Directory.current.path).then((_) {
-  //  print('Coverage report saved to "coverage/lcov.info".');
-  //});
+
   final lineCoverage = calculateLineCoverage(File('coverage/lcov.info'));
   generateBadge(package, lineCoverage);
   return;
