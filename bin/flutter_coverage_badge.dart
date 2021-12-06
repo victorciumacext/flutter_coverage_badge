@@ -8,17 +8,14 @@ Future main(List<String> args) async {
   final parser = new ArgParser();
 
   parser.addFlag('help', abbr: 'h', help: 'Show usage', negatable: false);
-  parser.addFlag('badge',
-      help: 'Generate coverage badge SVG image in your package root',
-      defaultsTo: true);
-  parser.addFlag('test', abbr:  't', help: 'runs flutter test before generating badge ');
+  parser.addFlag('badge', help: 'Generate coverage badge SVG image in your package root', defaultsTo: true);
+  parser.addFlag('test', abbr: 't', help: 'runs flutter test before generating badge ');
 
   final options = parser.parse(args);
 
   if (options.wasParsed('test')) {
-    await runTestsWithCoverage(Directory.current.path).then((_) {
-     print('Coverage report saved to "coverage/lcov.info".');
-    });
+    await runTest(package);
+    return;
   }
 
   if (options.wasParsed('help')) {
@@ -26,6 +23,15 @@ Future main(List<String> args) async {
     return;
   }
 
+  final lineCoverage = calculateLineCoverage(File('coverage/lcov.info'));
+  generateBadge(package, lineCoverage);
+  return;
+}
+
+Future<void> runTest(Directory package) async {
+  await runTestsWithCoverage(Directory.current.path);
+
+  print('Coverage report saved to "coverage/lcov.info".');
   final lineCoverage = calculateLineCoverage(File('coverage/lcov.info'));
   generateBadge(package, lineCoverage);
   return;
